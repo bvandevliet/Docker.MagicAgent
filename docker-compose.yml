@@ -1,0 +1,16 @@
+version: '3.6'
+
+services:
+  magicagent:
+    container_name: magicagent
+    image: bvandevliet/magicagent:local
+    build:
+      context: .
+      dockerfile: MagicAgent/Dockerfile
+    restart: unless-stopped
+    network_mode: host
+    environment:
+    - NetworkSettings__ListenPort=9
+    - NetworkSettings__ListenAddress=0.0.0.0
+    - NetworkSettings__BroadcastPort=9
+    - NetworkSettings__BroadcastAddress=255.255.255.255
