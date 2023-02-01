@@ -18,6 +18,7 @@ ARG MODE=Release
 RUN dotnet publish "MagicAgent.csproj" -c $MODE -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
+RUN apt update -y && apt install -y tzdata
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "MagicAgent.dll"]

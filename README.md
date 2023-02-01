@@ -39,11 +39,12 @@ services:
     image: bvandevliet/magicagent:linux-arm64-v8
     restart: unless-stopped
     network_mode: host
-    # environment:
-    # - NetworkSettings__ListenPort=9
-    # - NetworkSettings__ListenAddress=0.0.0.0
-    # - NetworkSettings__BroadcastPort=9
-    # - NetworkSettings__BroadcastAddress=255.255.255.255
+    environment:
+      - TZ=Europe/Amsterdam
+      # - NetworkSettings__ListenPort=9
+      # - NetworkSettings__ListenAddress=0.0.0.0
+      # - NetworkSettings__BroadcastPort=9
+      # - NetworkSettings__BroadcastAddress=255.255.255.255
 ```
 
 ## Build
