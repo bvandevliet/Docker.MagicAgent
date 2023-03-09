@@ -3,7 +3,6 @@
 A background service that forwards Wake On Lan (WOL) packets to the broadcast address.  
 Typically used on a server to enable WOL for users connected via VPN.  
 
-**GitHub**: https://github.com/bvandevliet/MagicAgent  
 **DockerHub**: https://hub.docker.com/r/bvandevliet/magicagent  
 
 ## Use case
