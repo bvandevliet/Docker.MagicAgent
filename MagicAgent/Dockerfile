@@ -1,6 +1,6 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/runtime:6.0 AS base
+FROM mcr.microsoft.com/dotnet/runtime:6.0-alpine-arm64v8 AS base
 WORKDIR /app
 EXPOSE 9/udp
 
@@ -18,7 +18,7 @@ ARG MODE=Release
 RUN dotnet publish "MagicAgent.csproj" -c $MODE -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
-RUN apt update -y && apt install -y tzdata
+RUN apk add -U --no-cache tzdata
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "MagicAgent.dll"]
