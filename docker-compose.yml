@@ -3,12 +3,10 @@ version: '3.6'
 services:
   magicagent:
     container_name: magicagent
-    image: bvandevliet/magicagent:local
+    image: bvandevliet/magicagent:${TAG:-latest}
     build:
       context: .
       dockerfile: MagicAgent/Dockerfile
-      args:
-        - TAG=6.0-alpine-arm64v8
     restart: unless-stopped
     tty: true
     network_mode: host

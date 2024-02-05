@@ -4,7 +4,7 @@ services:
   magicagent:
     build:
       args:
-        - TAG=6.0-alpine
+        - TAG=8.0-alpine
         - MODE=Debug
     environment:
       - DOTNET_ENVIRONMENT=Development
