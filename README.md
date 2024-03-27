@@ -18,9 +18,6 @@ the packet will be forwarded to the network's broadcast address (255.255.255.255
 
 ## Install
 
-**This image is intended to use on a Raspberry Pi 4, hence the tag `8.0-alpine-arm64v8`.**  
-**If you wish to use it on a device with a different architecture, you could consider [making a build](#build) yourself.**  
-
 1. Add the `magicagent` service to your `docker-compose.yml` file.  
 Make sure to set `network_mode: host` to allow broadcasting.  
 1. You may change the listen and broadcast ports and addresses by overriding the defaults.  
@@ -35,7 +32,7 @@ version: '3.6'
 services:
   magicagent:
     container_name: magicagent
-    image: bvandevliet/magicagent:8.0-alpine-arm64v8
+    image: bvandevliet/magicagent:latest
     restart: unless-stopped
     tty: true
     network_mode: host
@@ -45,14 +42,4 @@ services:
       # - NetworkSettings__ListenAddress=0.0.0.0
       # - NetworkSettings__BroadcastPort=9
       # - NetworkSettings__BroadcastAddress=255.255.255.255
-```
-
-## Build
-
-You may want to change the build argument `TAG` in the Dockerfile to meet your requirements.  
-This tag must match any existing `alpine` tag of the `dotnet` images provided by Microsoft on Docker Hub.  
-Then build an image for your specific architecture. See [Microsoft CR](https://mcr.microsoft.com/product/dotnet/runtime/tags) for supported tags.  
-```
-export TAG="8.0-alpine-arm64v8"
-docker compose -f docker-compose.yml build --build-arg TAG=${TAG} --pull --no-cache
 ```
