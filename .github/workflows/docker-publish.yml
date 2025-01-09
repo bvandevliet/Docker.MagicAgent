@@ -33,7 +33,7 @@ jobs:
     uses: bvandevliet/Actions.Shared/.github/workflows/docker-build-push.yml@master
     with:
       CR_REGISTRY: docker.io
-      PROJECT: MagicAgent
+      CSPROJ_NAME: MagicAgent
       IMAGE_NAME: ${{ github.repository_owner }}/magicagent
       majorMinorPatch: ${{ needs.gitversion.outputs.majorMinorPatch }}
       preReleaseLabel: ${{ needs.gitversion.outputs.preReleaseLabel }}
