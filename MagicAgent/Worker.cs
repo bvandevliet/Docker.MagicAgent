@@ -19,83 +19,81 @@ internal class Worker : BackgroundService
   [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0011:Add braces", Justification = "<Pending>")]
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
-  start:
-
-    try
+    while (!stoppingToken.IsCancellationRequested)
     {
-      // Create listener.
-      var listenerEndpoint = new IPEndPoint(IPAddress.Parse(settings.ListenAddress), settings.ListenPort);
-      using var udpListener = new UdpClient(listenerEndpoint);
-
-      // Create sender.
-      var senderEndpoint = new IPEndPoint(IPAddress.Parse(settings.BroadcastAddress), settings.BroadcastPort);
-      using var udpSender = new UdpClient() { EnableBroadcast = true };
-      udpSender.Connect(senderEndpoint);
-
-      // Log..
-      logger.LogInformation("{time}: Listening at \"{listener}\".",
-        DateTime.Now.ToString("u"), listenerEndpoint.ToString());
-
-      // The loop.
-      while (!stoppingToken.IsCancellationRequested)
+      try
       {
-        try
-        {
-          // Listen for UDP packets.
-          UdpReceiveResult received = await udpListener.ReceiveAsync(stoppingToken);
+        // Create listener.
+        var listenerEndpoint = new IPEndPoint(IPAddress.Parse(settings.ListenAddress), settings.ListenPort);
+        using var udpListener = new UdpClient(listenerEndpoint);
 
-          // Get received buffer.
-          byte[] bytesReceived = received.Buffer;
-
-          // Test if is a magic packet.
-          if (!IsMagicPacket(bytesReceived))
-            continue;
-
-          // Don't infinitely re-forward packets if sent from the same client.
-          if (received.RemoteEndPoint.Address.Equals(((IPEndPoint?)udpSender.Client.LocalEndPoint)?.Address))
-            continue;
-
-          // Get MAC address from buffer.
-          string mac = BitConverter.ToString(bytesReceived, 6, 6);
-
-          // Log..
-          logger.LogInformation("{time}: Magic packet for MAC address \"{mac}\" received from \"{remote}\" at \"{local}\".",
-            DateTime.Now.ToString("u"), mac, received.RemoteEndPoint.ToString(), udpListener.Client.LocalEndPoint?.ToString());
-
-          // Forward the packet.
-          udpSender.Send(bytesReceived, bytesReceived.Length);
-
-          // Log..
-          logger.LogInformation("{time}: Magic packet for MAC address \"{mac}\" forwarded to \"{remote}\" from \"{local}\".",
-            DateTime.Now.ToString("u"), mac, senderEndpoint.ToString(), udpSender.Client.LocalEndPoint?.ToString());
-        }
-        catch (OperationCanceledException)
-        {
-          throw;
-        }
-        catch (Exception Ex)
-        {
-          logger.LogError(Ex, "{time}: Network exception.", DateTime.Now.ToString("u"));
-        }
+        // Create sender.
+        var senderEndpoint = new IPEndPoint(IPAddress.Parse(settings.BroadcastAddress), settings.BroadcastPort);
+        using var udpSender = new UdpClient() { EnableBroadcast = true };
+        udpSender.Connect(senderEndpoint);
 
         // Log..
         logger.LogInformation("{time}: Listening at \"{listener}\".",
           DateTime.Now.ToString("u"), listenerEndpoint.ToString());
+
+        // The loop.
+        while (!stoppingToken.IsCancellationRequested)
+        {
+          try
+          {
+            // Listen for UDP packets.
+            UdpReceiveResult received = await udpListener.ReceiveAsync(stoppingToken);
+
+            // Get received buffer.
+            byte[] bytesReceived = received.Buffer;
+
+            // Test if is a magic packet.
+            if (!IsMagicPacket(bytesReceived))
+              continue;
+
+            // Don't infinitely re-forward packets if sent from the same client.
+            if (received.RemoteEndPoint.Address.Equals(((IPEndPoint?)udpSender.Client.LocalEndPoint)?.Address))
+              continue;
+
+            // Get MAC address from buffer.
+            string mac = BitConverter.ToString(bytesReceived, 6, 6);
+
+            // Log..
+            logger.LogInformation("{time}: Magic packet for MAC address \"{mac}\" received from \"{remote}\" at \"{local}\".",
+              DateTime.Now.ToString("u"), mac, received.RemoteEndPoint.ToString(), udpListener.Client.LocalEndPoint?.ToString());
+
+            // Forward the packet.
+            await udpSender.SendAsync(bytesReceived, bytesReceived.Length);
+
+            // Log..
+            logger.LogInformation("{time}: Magic packet for MAC address \"{mac}\" forwarded to \"{remote}\" from \"{local}\".",
+              DateTime.Now.ToString("u"), mac, senderEndpoint.ToString(), udpSender.Client.LocalEndPoint?.ToString());
+          }
+          catch (OperationCanceledException)
+          {
+            throw;
+          }
+          catch (Exception Ex)
+          {
+            logger.LogError(Ex, "{time}: Network exception.", DateTime.Now.ToString("u"));
+          }
+
+          // Log..
+          logger.LogInformation("{time}: Listening at \"{listener}\".",
+            DateTime.Now.ToString("u"), listenerEndpoint.ToString());
+        }
+      }
+      catch (OperationCanceledException)
+      {
+        logger.LogError("{time}: Worker shutting down ..", DateTime.Now.ToString("u"));
+        break;
+      }
+      catch (Exception Ex)
+      {
+        logger.LogError(Ex, "{time}: Worker exception. Restarting ..", DateTime.Now.ToString("u"));
+        continue;
       }
     }
-    catch (OperationCanceledException)
-    {
-      logger.LogError("{time}: Worker shutting down ..", DateTime.Now.ToString("u"));
-    }
-    catch (Exception Ex)
-    {
-      logger.LogError(Ex, "{time}: Worker exception. Restarting ..", DateTime.Now.ToString("u"));
-
-      // Keep alive ..
-      goto start;
-    }
-
-    return;
   }
 
   [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0011:Add braces", Justification = "<Pending>")]
