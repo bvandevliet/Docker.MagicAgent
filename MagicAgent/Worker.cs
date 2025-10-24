@@ -51,8 +51,8 @@ internal class Worker : BackgroundService
             if (!IsMagicPacket(bytesReceived))
               continue;
 
-            // Don't infinitely re-forward packets if sent from the same client.
-            if (received.RemoteEndPoint.Address.Equals(((IPEndPoint?)udpSender.Client.LocalEndPoint)?.Address))
+            // Skip only if this is the exact datagram we ourselves just broadcast (same source IP+port).
+            if (received.RemoteEndPoint.Equals(udpSender.Client.LocalEndPoint))
               continue;
 
             // Get MAC address from buffer.
